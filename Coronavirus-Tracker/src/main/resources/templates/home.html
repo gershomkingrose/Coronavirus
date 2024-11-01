@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <!-- External CSS and JS dependencies -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.13.1/css/jquery.dataTables.min.css" rel="stylesheet">
+    <script src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js"></script>
+
+    <!-- Thymeleaf-processed CSS dependencies -->
+    <link th:href="@{/CSS/bootstrap.min.css}" rel="stylesheet">
+    <link th:href="@{/CSS/jquery.dataTables.min.css}" rel="stylesheet">
+
+    <!-- Thymeleaf-processed JS dependency -->
+    <script th:src="@{/JS/jquery.dataTables.min.js}"></script>
+
+    <title>Corona Virus Tracker Application</title>
+    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
+
+    <script>
+        $(document).ready(function() {
+            $('#myTable').DataTable();
+        });
+    </script>
+
+    <style>
+        .jumbotron {
+            background: url("bg.jpg") no-repeat center center;
+            -webkit-background-size: 100% 100%;
+            -moz-background-size: 100% 100%;
+            -o-background-size: 100% 100%;
+            background-size: 100%;
+        }
+
+        #flag {
+            margin: auto;
+            height: 50px;
+            width: 75px;
+            box-sizing: border-box;
+            background-size: cover;
+        }
+    </style>
+</head>
+<body>
+
+<div class="jumbotron" style="background-image: url(/images/coronavirus_banner.png); background-size: cover;">
+    <div class="p-3 mb-2">
+        <h1 class="heading text-light">Corona Virus Tracker Application</h1>
+        <br>
+        <p style="color: white;">This Application lists the current number of cases reported across the globe.</p>
+        <div class="badge bg-danger text-light">
+            <a href="#" th:href="@{/viewChart}" role="button" class="btn btn-danger"><h1 th:text="${totalDeathsReported}"></h1></a>
+        </div>
+        
+        <p style="color: white;">Total Cases Reported As Of Today</p>
+    </div>
+
+    <marquee behavior="alternate">
+        <div class="badge bg-success text-light">
+            <h6>Wear Mask. Use Sanitizer. Keep Social Distance</h6>
+        </div>
+    </marquee>
+</div>
+
+<div class="container">
+    <table class="table table-striped" id="myTable" border="1">
+        <thead>
+            <tr class="table-row bg-dark text-light">
+                <th>State</th>
+                <th>Flag</th>
+                <th>Country</th>
+                <th>Total Deaths Reported</th>
+                <th>Changes Since Last Day</th>
+            </tr>
+        </thead>
+        <tbody>
+                <tr th:each="locationstate : ${LocationStates}">
+                    <td th:text="${locationstate.state}">State</td>
+<td id="flag" 
+    th:style="'background-image: url(/images/flags/' + ${locationstate.country} + '.png); background-size: contain; width: 50px; height: 30px; background-repeat: no-repeat; background-position: center;'">
+</td>
+    				<td  th:text="${locationstate.country}">Country</td>     
+                    <td th:text="${locationstate.latestTotalDeaths}">0</td>
+                    <td th:text="${locationstate.differFromPrevay}">0</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+    <!-- Bootstrap JS and dependencies (Optional) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js" 
+            integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2LcYaeKjDkCJPk5y3G1CQkQ8mP0XU0Yvbrg1J1sTga" 
+            crossorigin="anonymous"></script>
+</body>
+
+</html>

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>COVID-19 Deaths Chart</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        #chartContainer {
+            margin: 0 auto;
+            max-width: 1200px;
+            height: 600px;
+        }
+        canvas {
+            border: 1px solid #ddd;
+            border-radius: 0.5rem;
+            background-color: white;
+            width: 100% !important;
+            height: 100% !important;
+        }
+        h2 {
+            font-family: 'Arial', sans-serif;
+            font-weight: bold;
+            color: #343a40;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container mt-5">
+        <h2 class="mb-4 text-center">COVID-19 Deaths by Country</h2>
+        <a href="/" class="btn btn-primary mt-3">Back to Home</a>
+        <div id="chartContainer">
+            <canvas id="deathsChart"></canvas>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        // Retrieve the myURL value passed from the Spring controller
+        const dataUrl = /*[[${myURL}]]*/ '';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            async function fetchChartData() {
+                try {
+                    const response = await fetch(dataUrl);
+                    if (!response.ok) {
+                        throw new Error(`Network response was not ok: ${response.statusText}`);
+                    }
+                    const data = await response.json();
+
+                    // Check if the data matches the expected format
+                    return data.map(item => ({
+                        country: item.country,
+                        deaths: item.latestTotalDeaths
+                    }));
+                } catch (error) {
+                    console.error('Error fetching chart data:', error);
+                    alert('Failed to load chart data. Please try again later.');
+                    return [];
+                }
+            }
+
+            function initChart(countries, deathCounts) {
+                const maxDeaths = Math.max(...deathCounts);
+                const minDeaths = Math.min(...deathCounts);
+
+                function getColor(deathCount) {
+                    const ratio = (deathCount - minDeaths) / (maxDeaths - minDeaths);
+                    const red = Math.floor(255 * ratio);
+                    const green = Math.floor(255 * (1 - ratio));
+                    return `rgba(${red}, ${green}, 0, 0.6)`;
+                }
+
+                const backgroundColors = deathCounts.map(getColor);
+
+                const ctx = document.getElementById('deathsChart').getContext('2d');
+                const deathsChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: countries,
+                        datasets: [{
+                            label: 'Total Deaths',
+                            data: deathCounts,
+                            backgroundColor: backgroundColors,
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Country',
+                                    font: {
+                                        size: 14
+                                    }
+                                },
+                                ticks: {
+                                    autoSkip: true,
+                                    maxRotation: 90,
+                                    minRotation: 90
+                                }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Number of Deaths',
+                                    font: {
+                                        size: 14
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'COVID-19 Deaths by Country',
+                                font: {
+                                    size: 18
+                                }
+                            },
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `Deaths: ${context.parsed.y}`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            async function renderChart() {
+                const chartData = await fetchChartData();
+                if (chartData.length > 0) {
+                    const countries = chartData.map(item => item.country);
+                    const deathCounts = chartData.map(item => item.deaths);
+                    initChart(countries, deathCounts);
+                } else {
+                    alert('No data available to render the chart.');
+                }
+            }
+
+            renderChart();
+        });
+    </script>
+    
+</body>
+</html>
